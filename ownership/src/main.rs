@@ -14,12 +14,25 @@ fn main() {
     let s2 = String::from("hello");
     let _s3 = takes_and_gives_back(s2);
 
-    // return multiple values
+    // return multiple values - calculate length by returning tuple code
     let s4 = String::from("there it is!!!");
 
     let (s5, len) = calculate_length(s4);
 
-    println!("The length of '{}' is {}.", s5, len)
+    println!("The length of '{}' is {}.", s5, len);
+
+    // referencing - calculate length
+    let s6 = String::from("heyharshjaiswal");
+    let len2 = calculate_length_using_reference(&s6);
+
+    println!("The length of {} using reference is {}.", s6, len2);
+
+    // update the string using reference
+    let mut x = String::from("GitHub username is: ");
+
+    add_username(&mut x);
+
+    println!("{x}");
 }
 
 fn takes_ownership(some_string: String) {
@@ -44,4 +57,12 @@ fn calculate_length(some_string: String) -> (String, usize) {
     let length = some_string.len();
 
     (some_string, length)
+}
+
+fn calculate_length_using_reference(some_string: &String) -> usize {
+    some_string.len()
+}
+
+fn add_username(github: &mut String) {
+    github.push_str("heyharshjaiswal");
 }
