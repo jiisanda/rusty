@@ -48,11 +48,3 @@ impl fmt::Display for Clock {
         write!(f, "{:02}:{:02}", self.minutes / HOUR, self.minutes % HOUR)
     }
 }
-
-fn main() {
-    let clock1 = Clock::new(8, 50);
-    let clock2 = clock1.add_minutes(45);
-
-    println!("Clock 1: {}", clock1);
-    println!("Clock 2: {}", clock2);
-}
