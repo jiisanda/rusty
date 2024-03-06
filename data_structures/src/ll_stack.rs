@@ -40,6 +40,21 @@ impl List {
 }
 
 
+impl Drop for List {
+    fn drop(&mut self) {
+        let mut cur_link = mem::replace(&mut self.head, Link::Empty);
+
+        // `while let` == "do this until this pattern does not match"
+        while let Link::More(mut box_node) = cur_link {
+            cur_link = mem::replace(&mut box_node.next, Link::Empty);
+            // box_node goes out of scope here and gets dropped,
+            // but it's node.next has set to Empty
+            // so no unbounded recursion 
+        }
+    }
+}
+
+
 // testing
 
 
