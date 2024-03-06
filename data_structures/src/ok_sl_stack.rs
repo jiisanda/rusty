@@ -9,9 +9,16 @@ struct Node<T> {
     next: Link<T>,
 }
 
+pub struct IntoIter<T>(List<T>);
+
 impl<T> List<T> {
     pub fn new() -> Self {
         List { head: None }             // We don't write List<T> when we construct an instance of list
+    }
+
+    pub fn into_iter(self) -> IntoIter<T> {
+        // access fields of a tuple struct iteratively
+        IntoIter(self)
     }
 
     pub fn push(&mut self, elem: T) {
@@ -59,6 +66,14 @@ impl<T> Drop for List<T> {
         while let Some(mut box_node) = cur_link {
             cur_link = box_node.next.take();
         }
+    }
+}
+
+impl<T> Iterator for IntoIter<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        // access fields of tuple struct numerically
+        self.0.pop()
     }
 }
 
@@ -120,4 +135,19 @@ fn peek() {
 
     assert_eq!(list.peek(), Some(&42));
     assert_eq!(list.pop(), Some(42));
+}
+
+#[test]
+fn into_iter() {
+    let mut list = List::new();
+
+    list.push(1);
+    list.push(2);
+    list.push(3);
+
+    let mut iter = list.into_iter();
+    assert_eq!(iter.next(), Some(3));
+    assert_eq!(iter.next(), Some(2));
+    assert_eq!(iter.next(), Some(1));
+    assert_eq!(iter.next(), None);
 }
