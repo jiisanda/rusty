@@ -1,3 +1,7 @@
+pub struct Iter<'a, T> {
+    next: Option<&'a Node<T>>,
+}
+
 pub struct List<T> {
     head: Link<T>,
 }
@@ -14,6 +18,10 @@ pub struct IntoIter<T>(List<T>);
 impl<T> List<T> {
     pub fn new() -> Self {
         List { head: None }             // We don't write List<T> when we construct an instance of list
+    }
+
+    pub fn iter<'a>(&'a self) -> Iter<'a, T> {          // lifetime elision can be applied -> pub fn iter(&self) -> Iter<T>
+        Iter { next: self.head.as_deref() }
     }
 
     pub fn into_iter(self) -> IntoIter<T> {
@@ -80,6 +88,17 @@ impl<T> Iterator for IntoIter<T> {
 
 // here self.head.take() is
 // mem::replace(&mut self.head, None)
+
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next.map(|node| {
+            self.next = node.next.as_deref();          // as_deref() = as_ref().map(|node| &**node)
+            &node.elem
+        })
+    }
+}
 
 
 #[cfg(test)]
@@ -150,4 +169,18 @@ fn into_iter() {
     assert_eq!(iter.next(), Some(2));
     assert_eq!(iter.next(), Some(1));
     assert_eq!(iter.next(), None);
+}
+
+#[test]
+fn iter() {
+    let mut list = List::new();
+
+    list.push(1);
+    list.push(2);
+    list.push(3);
+
+    let mut iter = list.iter();
+    assert_eq!(iter.next(), Some(&3));
+    assert_eq!(iter.next(), Some(&2));
+    assert_eq!(iter.next(), Some(&1));
 }
