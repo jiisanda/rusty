@@ -1,3 +1,4 @@
+use std::env::join_paths;
 use std::ops::AddAssign;
 use std::sync::Mutex;
 use std::thread::{scope};
@@ -25,6 +26,8 @@ pub fn test_mutex() {
     let myfunc2 = || {
         println!("Thread 2 is waiting for mutex lock");
         let mut data = score.lock().unwrap();
+        // drop(data);
+        // panic!("Error in the thread");
         for i in 1..10 {
             data.add_assign(i);
             println!("Thread 2 is adding {i}");
@@ -34,8 +37,15 @@ pub fn test_mutex() {
     // _ = spawn(myfunc).join();
 
     _ = scope(|s| {
-        s.spawn(myfunc);
-        s.spawn(myfunc2);
+        let handle1 = s.spawn(myfunc).join();
+        let handle2 = s.spawn(myfunc2).join();
+
+        if handle2.is_err() {
+            println!("Thread2 has an error");
+        }
+        if handle1.is_err() {
+            println!("Thread1 has na error");
+        }
     });
 
     println!("{:?}", score.lock().unwrap());            // borrow of moved value: `score` [E0382]
