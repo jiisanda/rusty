@@ -1,5 +1,5 @@
 mod mymutex;
 
 fn main() {
-    println!("Hello, world!");
+    mymutex::test_mutex();
 }
