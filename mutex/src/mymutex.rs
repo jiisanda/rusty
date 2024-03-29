@@ -1,7 +1,7 @@
-use std::env::join_paths;
 use std::ops::AddAssign;
 use std::sync::Mutex;
-use std::thread::{scope};
+use std::thread::{scope, sleep};
+use std::time::Duration;
 
 pub fn test_mutex() {
     let score = Mutex::new(0u16);
@@ -20,32 +20,36 @@ pub fn test_mutex() {
         for i in 1..10 {
             data.add_assign(i);
             println!("Thread 1 is adding {i}");
+            sleep(Duration::from_millis(430));
         }
     };
 
     let myfunc2 = || {
-        println!("Thread 2 is waiting for mutex lock");
-        let mut data = score.lock().unwrap();
+        loop {
+            println!("Thread 2 is waiting for mutex lock");
+            let  guard = score.try_lock();
+
+            if guard.is_ok() {
+                let mut data = guard.unwrap();
+                for i in 1..10 {
+                    data.add_assign(i);
+                    println!("Thread 2 is adding {i}");
+                }
+                break;
+            }
+
+            sleep(Duration::from_millis(300));
+        }
         // drop(data);
         // panic!("Error in the thread");
-        for i in 1..10 {
-            data.add_assign(i);
-            println!("Thread 2 is adding {i}");
-        }
     };
 
     // _ = spawn(myfunc).join();
 
     _ = scope(|s| {
-        let handle1 = s.spawn(myfunc).join();
-        let handle2 = s.spawn(myfunc2).join();
+        _ = s.spawn(myfunc);
+        _ = s.spawn(myfunc2);
 
-        if handle2.is_err() {
-            println!("Thread2 has an error");
-        }
-        if handle1.is_err() {
-            println!("Thread1 has na error");
-        }
     });
 
     println!("{:?}", score.lock().unwrap());            // borrow of moved value: `score` [E0382]
